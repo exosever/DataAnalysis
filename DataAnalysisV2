@@ -1,59 +1,30 @@
-#!/usr/bin/python
+#! /usr/bin/env python3
 
+from pandas import DataFrame, ExcelWriter
 from ldap3 import Server, Connection, ALL, SUBTREE
-import re, sys
+import re
+import sys
+import os
 import tkinter as tk
+from dotenv import load_dotenv
 from tkinter import filedialog
 from csv import DictReader
-#----------------------------------------------------#
-#Data comparison tool by Joshua Harrison             |
-#For AD, 1to1 Asset Management, and Microsoft Intune |
-#----------------------------------------------------#
-############################
-#Globals
-############################
-def close_window(): #To close tkinter windows
-    root.quit()
-
-def close_popup(): #To close tkinter popups
-    if 'popup' in globals():
-        popup.destroy()
-
-def find_serials(list, serial_search):
-    serial_list = []
-    for line in list:
-        if serial_list.count(line[serial_search]) != 1:
-            serial_list.append(line[serial_search])
-    return serial_list
-
-def exceptions(serials):
-    exceptions = []
-    for line in AD_data_clean:
-        if line['AD Serial Number'] != 'Missing Serial' and serials.count(line['AD Serial Number']) != 1:
-            exceptions.append(line)
-    return exceptions
-
-def matches(list, serial_search):
-    matches = []
-    for line in AD_data_clean:
-        for line2 in list:
-            if line2[serial_search] == line ['AD Serial Number']:
-                matched_line = []
-                matched_line.append(line2)
-                matched_line.append(line)
-                matches.append(matched_line)
-                break
-    return matches
-
-root = tk.Tk()
-
-
+# ----------------------------------------------------#
+# Data comparison tool by Joshua Harrison             |
+# For AD, 1to1 Asset Management, and Microsoft Intune |
+# ----------------------------------------------------#
 #############################
-#Function to establish proper location/container for AD
+# Function to establish proper location/container for AD
 #############################
-def school_select(): #To choose which school to pull AD data from
-    my_string_variable = tk.StringVar(root, "") #This is the school identifier for AD
-    grade_variable = tk.StringVar(root, "") #This is the grade level identifier for AD
+
+
+def school_select():
+    """
+    This function takes a user selected input, and returns two values for School Identifier, and Grade Level
+    These values are later used for our AD search function to pull the appropriate container data
+    """
+    ad_identifier = tk.StringVar(root, "")
+    ad_grade = tk.StringVar(root, "")
     menu = tk.Menu(root)
     root.config(menu=menu)
 
@@ -62,97 +33,185 @@ def school_select(): #To choose which school to pull AD data from
     high = tk.Menu(menu)
     other = tk.Menu(menu)
 
-    #Elementary Schools
-    elementary.add_command(label="    ####REDACTED", command=lambda: (my_string_variable.set(    ####REDACTED"), grade_variable.set("    ####REDACTED"), close_window()))
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
+    # Elementary Schools
+    elementary.add_command(label="Aiken Elementary", command=lambda: (
+        ad_identifier.set("AIKE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Belvedere Elementary", command=lambda: (
+        ad_identifier.set("BELE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Busbee Corbin Elementary", command=lambda: (
+        ad_identifier.set("BUSCOR"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Byrd Elementary", command=lambda: (
+        ad_identifier.set("BYRE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Chucker Creek Elementary", command=lambda: (
+        ad_identifier.set("CHUE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Clearwater Elementary", command=lambda: (
+        ad_identifier.set("CLEE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="East Aiken School of the Arts", command=lambda: (
+        ad_identifier.set("EAIE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Gloverville Elementary", command=lambda: (
+        ad_identifier.set("GLOE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Graniteville Elementary", command=lambda: (
+        ad_identifier.set("GRAE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Greendale Elementary", command=lambda: (
+        ad_identifier.set("GREE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Hammond Hill Elementary", command=lambda: (
+        ad_identifier.set("HHIE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="J.D. Lever Elementary", command=lambda: (
+        ad_identifier.set("JDLE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Jefferson Elementary", command=lambda: (
+        ad_identifier.set("JEFE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Millbrook Elementary", command=lambda: (
+        ad_identifier.set("MILE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Mossy Creek Elementary", command=lambda: (
+        ad_identifier.set("MOSE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="North Aiken Elementary", command=lambda: (
+        ad_identifier.set("NAIE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="North Augusta Elementary", command=lambda: (
+        ad_identifier.set("NAUE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Oakwood-Windsor Elementary", command=lambda: (
+        ad_identifier.set("OAKE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Redcliffe Elementary", command=lambda: (
+        ad_identifier.set("REDE"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Ridge-Spring Monetta Elementary", command=lambda: (
+        ad_identifier.set("RSME"), ad_grade.set("Elementary Schools"), root.quit()))
+    elementary.add_command(label="Warrenville Elementary", command=lambda: (
+        ad_identifier.set("WARE"), ad_grade.set("Elementary Schools"), root.quit()))
 
-    #Middle Schools
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
+    # Middle Schools
+    middle.add_command(label="Aiken Intermediate", command=lambda: (
+        ad_identifier.set("AIKM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Highland Springs Middle", command=lambda: (
+        ad_identifier.set("HSMS"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Jackson Middle", command=lambda: (
+        ad_identifier.set("JACM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Kennedy Middle", command=lambda: (
+        ad_identifier.set("KENM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="L.B.C. Middle", command=lambda: (
+        ad_identifier.set("LBCM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Leavelle McCampbell Middle", command=lambda: (
+        ad_identifier.set("LEAM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="North Augusta Middle", command=lambda: (
+        ad_identifier.set("NAUM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="New Ellenton Middle", command=lambda: (
+        ad_identifier.set("NELM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Paul Knox Middle", command=lambda: (
+        ad_identifier.set("PKNM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="Schofield Middle", command=lambda: (
+        ad_identifier.set("SCHM"), ad_grade.set("Middle Schools"), root.quit()))
 
-    #High Schools
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
-    ####REDACTED
+    # High Schools
+    high.add_command(label="Aiken High", command=lambda: (
+        ad_identifier.set("AIKH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Midland Valley High", command=lambda: (
+        ad_identifier.set("MVAH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="North Augusta High", command=lambda: (
+        ad_identifier.set("NAUH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Ridge-Spring Monetta High", command=lambda: (
+        ad_identifier.set("RSMH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="South Aiken High", command=lambda: (
+        ad_identifier.set("SAIH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Silverbluff High", command=lambda: (
+        ad_identifier.set("SILH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Wagner-Salley High", command=lambda: (
+        ad_identifier.set("WAGH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Aiken County Career Center", command=lambda: (
+        ad_identifier.set("ACCC"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="Aiken Scholars Academy", command=lambda: (
+        ad_identifier.set("ASAH"), ad_grade.set("High Schools"), root.quit()))
 
-    #Other Schools
-    ####REDACTED
-    ####REDACTED
+    # Other Schools
+    other.add_command(label="Aiken Innovate", command=lambda: (
+        ad_identifier.set("AikenInnovate"), ad_grade.set("Other Schools"), root.quit()))
+    other.add_command(label="Pinecrest", command=lambda: (
+        ad_identifier.set("Pinecrest"), ad_grade.set("Other Schools"), root.quit()))
 
-    #Drop-Down Menus
+    # Drop-Down Menus
     menu.add_cascade(label="Elementary Schools", menu=elementary)
     menu.add_cascade(label="Middle Schools", menu=middle)
     menu.add_cascade(label="High Schools", menu=high)
     menu.add_cascade(label="Other Schools", menu=other)
 
-    #Configuration of Menu Window
+    # Configuration of Menu Window
     root.geometry("220x40+900+400")
-    #root.overrideredirect(True)
-    title_bar = tk.Label(root, text="Please Choose Your School", bg="darkgreen", fg="white")
+    # root.overrideredirect(True)
+    title_bar = tk.Label(
+        root, text="Please Choose Your School", bg="darkgreen", fg="white")
     title_bar.pack(side="top", fill="x")
     root.mainloop()
-    return my_string_variable.get(), grade_variable.get() #Returns the variables for use in the search_base as index values
+    return ad_identifier.get(), ad_grade.get()
 
-school = school_select() #Stores the returned index values as a variable
+
+root = tk.Tk()
+school = school_select()
+
+#############################
+# AD Connector and search parameters
+#############################
+"""
+This code block handles the connection to AD via LDAP.
+It searches for Student and Staff containers using the ad_identifier and ad_grade values provided in school_select()
+Adds all found entries as a list of dictionaries
+"""
+
+load_dotenv()
+ldap_address = os.environ.get('ldap_Address')
+ldap_username = os.environ.get('ldap_username')
+ldap_password = os.environ.get('ldap_password')
+
+if school:
+    server = Server(ldap_address, get_info=ALL)
+    conn = Connection(server, user=ldap_username,
+                      password=ldap_password, auto_bind=True)
+
+    search_base = 'OU=Student,OU=Workstations,OU='f"{
+        school[0]}"',OU='f"{school[1]}"',OU=schools,DC=,DC=local'
+    search_filter = '(objectClass=Computer)'
+    attributes = ('name', 'description', 'lastLogon')
+
+    conn.search(search_base, search_filter,
+                search_scope=SUBTREE, attributes=attributes)
+
+    AD_raw_data = []
+    for entry in conn.entries:
+        AD_raw_data.append((entry.entry_attributes_as_dict))
+
+    search_base = 'OU=Staff,OU=Workstations,OU='f"{
+        school[0]}"',OU='f"{school[1]}"',OU=schools,DC=,DC=local'
+    search_filter = '(objectClass=*)'
+    attributes = ('name', 'description', 'lastLogon')
+
+    conn.search(search_base, search_filter,
+                search_scope=SUBTREE, attributes=attributes)
+
+    for entry in conn.entries:
+        AD_raw_data.append((entry.entry_attributes_as_dict))
+
+    conn.unbind()
+
+else:
+    sys.exit()
 
 
 #############################
-#AD Connector and search parameters
+# Function to open file select window for 1to1
 #############################
-server = Server('    ####REDACTED', get_info=ALL) #AD/LDAP server
-conn = Connection(server, user='    ####REDACTED', password='    ####REDACTED', auto_bind=True) #Credentials
-
-search_base = 'OU=Student,OU=Workstations,OU='f"{school[0]}"',OU='f"{school[1]}"',OU=schools,DC=    ####REDACTED,DC=    ####REDACTED' #Search location/ Student
-search_filter = '(objectClass=*)' #ALL objects in container
-attributes=('name', 'description', 'lastLogon') #Only pull these attributes
-
-conn.search(search_base, search_filter, search_scope=SUBTREE, attributes=attributes) #Activates the search parameters
-
-AD_data_list = [] #Base list to store pulled AD data
-for entry in conn.entries:
-    AD_data_list.append((entry.entry_attributes_as_dict)) #Iterates over entries from AD search and adds them as DICTS to LIST
-
-search_base = 'OU=Staff,OU=Workstations,OU='f"{school[0]}"',OU='f"{school[1]}"',OU=schools,DC=    ####REDACTED,DC=    ####REDACTED' #Search location /Staff
-search_filter = '(objectClass=*)' #ALL objects in container
-attributes=('name', 'description', 'lastLogon') #Only pull these attributes
-
-conn.search(search_base, search_filter, search_scope=SUBTREE, attributes=attributes) #Activates the search parameters
-
-for entry in conn.entries:
-    AD_data_list.append((entry.entry_attributes_as_dict)) #Appending the staff devices to the base list
-
-conn.unbind() #Cleanly closes the connection
 
 
-#############################
-#Function to open file select window for 1to1
-#############################
-def open_file_dialog(): #Function to open a file select window for 1to1 data
-    root.withdraw() #Removes root window so only filedialog shows
-    file_path = filedialog.askopenfilename(title="Please Select Your Exported 1to1 Asset File!") #Saves file path as a variable
-    return file_path #Returns that variable
+def OneToOne_file_select():
+    """
+    This function opens a file dialog window for the user to select their 1to1 data location
+    """
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Please Select Your Exported 1to1 Asset File!")
+    return file_path
 
-def to1_error(): #Function to popup an error for 1to1 file selection
-    popup = tk.Toplevel() #Makes the window independant
+
+def OneToOne_error():
+    """
+    This function provides the user with an informative error if the data provided does not match requirements
+    """
+    popup = tk.Toplevel()
     popup.title("Error: Invalid file selected")
     popup.geometry("550x100+800+500")
     popup_label = tk.Label(popup, text="Please be sure to select the exported 1 To 1 Asset file!\n"
@@ -160,138 +219,218 @@ def to1_error(): #Function to popup an error for 1to1 file selection
     popup_label.pack(pady=10)
     popup_button = tk.Button(popup, text="Try Again", command=popup.destroy)
     popup_button.pack()
-    popup.lift() #Ensures the popup window is placed on top of other windows
-    return popup #Returns the value of it's own window
+    popup.lift()
+    return popup
 
 
 ############################
-#Filter 1to1 Data
+# Filter 1to1 Data
 ############################
-to1_select = True #Sets the file select while loop
-while to1_select: #Loop ensures user selects correct file before moving on
-    file_path = open_file_dialog() #Saves file path as a variable
-    to1_data_list = [] #Base 1to1 list
-    if file_path: #Checks if file_path exists, if user cancels the selection this will be FALSE and will exit program
-        if file_path.endswith(".csv"): #Checks for proper file type
-            try: #Use the true/try/except block to guarantee proper file selection for 1to1 data
-                with open(file_path, 'r', encoding="utf-8-sig") as file: #opens the specified file_path given previously
+OneToOne_selection = True
+while OneToOne_selection:
+    """
+    This code block uses a while loop to ensure the 1to1 file selected is correct
+    If no file is selected, or if the user quits or cancels, it will break the loop
+    The function then checks for the correct .csv format, and required headers
+    If file is incorrect, it will open the OneToOne_error popup
+    If file is correct, it will break the loop and save specified data as a list of dictionaries
+    """
+    file_path = OneToOne_file_select()
+    OneToOne_raw_data = []
+    if file_path:
+        if file_path.endswith(".csv"):
+            try:
+                with open(file_path, 'r', encoding="utf-8-sig") as file:
                     csv_reader = DictReader(file)
-                    desired_headers = ['Asset ID', 'Computer Name', 'Serial Number'] #The headers from the CSV we wish to pull
-                    if not all(header in csv_reader.fieldnames for header in desired_headers): #Checks if the .csv contains the appropriate headers
-                        popup = to1_error() #If file does not contain required data, error pops up instructing user
-                        popup.wait_window(popup) #Program will not continue until user closes popup
-                        continue #Forces program to the beginning of the loop
-                    to1_select = False #If .csv contains headers this breaks the loop
+                    desired_headers = ['Asset ID',
+                                       'Computer Name', 'Serial Number']
+                    if not all(header in csv_reader.fieldnames for header in desired_headers):
+                        popup = OneToOne_error()
+                        popup.wait_window(popup)
+                        continue
+                    OneToOne_selection = False
                     for row in csv_reader:
-                        if row.get('Asset Type Short Name') in ['Desktop', '2in1 Laptop', 'Loaner Device']: #Checks the Asset row for specific criteria before moving on
-                            selected_data = {} #Dictionary for rows
-                            for header in desired_headers: #Checks for each desired header
-                                selected_data[header] = row.get(header) #Adds a key to selected_data user the current 'header' and sets the value
-                            name = selected_data['Computer Name'] #Assigns the current 'Computer Name' to a variable
-                            if name.startswith('D') == False: #Checks variable so it can remove District devices from 1to1 data
-                                to1_data_list.append(selected_data)
-            except: #If the try block fails due to incorrect file selection
-                popup = to1_error()
+                        if row.get('Asset Type Short Name') in ['Desktop', '2in1 Laptop', 'Loaner Device']:
+                            selected_data = {}
+                            for header in desired_headers:
+                                selected_data[header] = row.get(header)
+                            name = selected_data['Computer Name']
+                            if not name.startswith('D'):
+                                OneToOne_raw_data.append(selected_data)
+            except:
+                popup = OneToOne_error()
                 popup.wait_window(popup)
-        else: #If file does not end in .csv
-            popup = to1_error()
+        else:
+            popup = OneToOne_error()
             popup.wait_window(popup)
-    else: #If user exits/cancels the file select window
+    else:
         sys.exit()
 
-
 #############################
-#Filter AD data to grab Serial Number and lastLogon time
+# Filter AD data to grab Serial Number and lastLogon time
 #############################
-AD_data_clean = [] #List for cleaned AD data
-for data in AD_data_list:
+"""
+This code block iterates over the AD_raw_data to extrapolate necessary information
+Code checks for logon field, and then continue on to pull SN: from each entries description
+If no logon field or SN: present, it adds 'No Previous Login' or 'Missing Serial'
+Entries are then added to a list of formatted dictionaries
+"""
+AD_clean_data = []
+for data in AD_raw_data:
     description = data['description']
     name = data['name']
     logon = data['lastLogon']
-    name = name[0] #Saves the value of the name key
+    name = name[0]
 
-    if logon: #Checks if there is a previous logon
-        datetime_object = logon[0] #Saves the value of the logon key
-        lastlogon = datetime_object.strftime("%Y-%m-%d %H:%M:%S") #Formats the datetime
+    if logon:
+        datetime_object = logon[0]
+        lastlogon = datetime_object.strftime("%Y-%m-%d %H:%M:%S")
     else:
-        lastlogon = "No Previous Login" #If no previous logon
+        lastlogon = "No Previous Login"
 
-    if name != 'Student': #####################Check this. It was a bug fix for Student empty entry being exported.###################
-        if description: #Checks for a description field
-            description_str = description[0] #Saves the value of description key
-            match = re.search(r"SN:([a-zA-Z0-9]+),", description_str) #Pulls the SN: from description
-            if match: #If it was able to pull the SN:
-                serial = match.group(1) #Saves the regex group as a variable
-                AD_data_clean.append({'AD Serial Number': serial, 'AD Computer Name': name, 'Last Login': lastlogon}) #Adds formatted row
-        else: #If no description field/ SN
-            AD_data_clean.append({'AD Serial Number': 'Missing Serial', 'AD Computer Name': name, 'Last Login': lastlogon}) #Adds formatted row
-
+    if description:
+        description_str = description[0]
+        match = re.search(r"SN:([a-zA-Z0-9]+),", description_str)
+        if match:
+            serial_number = match.group(1)
+            AD_clean_data.append(
+                {'AD Serial Number': serial_number, 'AD Computer Name': name, 'Last Login': lastlogon})
+    else:
+        AD_clean_data.append({'AD Serial Number': 'Missing Serial',
+                             'AD Computer Name': name, 'Last Login': lastlogon})
 
 #############################
-#Compare the two data sets (to1_data_list) and (AD_data_clean)
+# Compare the two data sets (OneToOne_raw_data) and (AD_clean_data)
 #############################
-ad_master_list = [] #List of all Serial Numbers found in the AD data
-ad_duplicate_serial = [] #List of just the duplicate Serial Numbers found in the AD data
-ad_missing_serial = [] #List of all the entries with missing serial numbers#
-ad_name = [] #List of all Computer Names in AD entries
-for line in AD_data_clean:
-    if line['AD Serial Number'] != 'Missing Serial': #Checks for Missing Serials
-        if ad_master_list.count(line['AD Serial Number']) != 1: #If the AD Serial Number is not already in the ad_master_list
-            ad_master_list.append(line['AD Serial Number']) #Adds the entry
+
+
+def find_serials(list, serial_search):
+    """
+    This function searches the provided list, against the Key parameter provided
+    It then returns a list of all serials present
+    """
+    serial_list = []
+    for line in list:
+        if serial_list.count(line[serial_search]) != 1:
+            serial_list.append(line[serial_search])
+    return serial_list
+
+
+def find_exceptions(serials, comparison):
+    """
+    This function takes a list of serials, and compares it to the AD serial list.
+    This is to find entries that do not have a match in AD
+    """
+    exceptions = []
+    for line in comparison:
+        if line['AD Serial Number'] != 'Missing Serial' and serials.count(line['AD Serial Number']) != 1:
+            exceptions.append(line)
+    return exceptions
+
+
+def find_matches(list, serial_search, comparison):
+    """
+    This function passes a list, with a given Key parameter, and finds all matching entries
+    between AD and the provided list and returns them in a list.
+    """
+    matches = []
+    for line in comparison:
+        for line2 in list:
+            if line2[serial_search] == line['AD Serial Number']:
+                matched_line = []
+                matched_line.append(line2)
+                matched_line.append(line)
+                matches.append(matched_line)
+                break
+    return matches
+
+
+"""
+This code block creates multiple data sets from AD_raw_Data
+One of all serial numbers found, one of all duplicate serial numbers found,
+One of all entries with 'Missing Serial' in the 'AD Serial Number Field', and one with all computer names found
+"""
+AD_master_list = []
+AD_duplicate_serials = []
+AD_missing_serials = []
+AD_names = []
+for line in AD_clean_data:
+    if line['AD Serial Number'] != 'Missing Serial':
+        if AD_master_list.count(line['AD Serial Number']) != 1:
+            AD_master_list.append(line['AD Serial Number'])
         else:
-            ad_duplicate_serial.append(line['AD Serial Number']) #If it is in the ad_master_list, adds to ad_duplicate_serial
-        if ad_name.count(line['AD Computer Name']) != 1: #Checks for computer name is in ad_name
-            ad_name.append(line['AD Computer Name']) #Adds it if not present
+            AD_duplicate_serials.append(line['AD Serial Number'])
+        if AD_names.count(line['AD Computer Name']) != 1:
+            AD_names.append(line['AD Computer Name'])
     else:
-        ad_missing_serial.append(line) #Adds 'Missing Serial' entries to ad_missing_serial
-        if ad_name.count(line['AD Computer Name']) != 1: #Checks for computer name is in ad_name
-            ad_name.append(line['AD Computer Name']) #Adds it if not present
-
+        AD_missing_serials.append(line)
+        if AD_names.count(line['AD Computer Name']) != 1:
+            AD_names.append(line['AD Computer Name'])
+"""
+This code block handles all of the 1to1 to AD comparisons.
+The serial search function pulls all Serial Numbers found in OneToOne_raw_data
+The exceptions function compares those entries with the AD_master_list and lists all AD entries with no match in 1to1
+The matches function compares the OneToOne_raw_data, with 'Serial Number' as a comparison, to the AD_master_list and lists all matches
+"""
 serial_search = "Serial Number"
-to1_serials = find_serials(to1_data_list, serial_search) #List of all Serial Numbers found in the 1to1 data
-ad_exceptions = exceptions(to1_serials) #This lists all of the AD entries that do not match 1to1. This does NOT include 'Missing Serial' entries#
-ad_1to1_matches = matches(to1_data_list, serial_search) #This is the list of all matching 1to1/AD entries#
-
-ad_duplicates = [] #List of all entries with duplicate Serial Numbers in AD#
-for line in AD_data_clean: #Iterates over each line in AD_data_clean
-    for number in ad_duplicate_serial: #Iterates over each Serial Number in ad_duplicate_serial
-        if line['AD Serial Number'] == number: #Checks to see if they match
-            ad_duplicates.append(line) #Adds EACH entry that matches to ad_duplicates
-ad_duplicates_sorted = sorted(ad_duplicates, key=lambda x: x['AD Serial Number']) #Sorts the matches
-#This was done so ALL entries with duplicated data were recorded, not just the one instance
-#And it was sorted so the user can easily read all of the duplicates of each Serial Number
-
-to1_exceptions = [] #This lists all 1to1 entries that do not match AD records. This does NOT include 'Missing Serial' entries#
-for line in to1_data_list:
-    if ad_master_list.count(line['Serial Number']) == False and ad_name.count(line['Computer Name']) == False: #Checks if Serial and Name BOTH match from 1to1 to AD
-        to1_exceptions.append(line)
-#The reason behind this block is; in AD newer devices do not have a populated description field with a SN: to pull
-#So the program will list it under missing serials, even if the device itself is in 1to1 and AD
-#The workaround was to create the name master list from AD
-#So an AD entry with 'Missing Serial' and the computer name "Test" would match a 1to1 record with
-#Serial number "1234567" and a computer name of "Test"
-
+OneToOne_serials_lists = find_serials(OneToOne_raw_data, serial_search)
+AD_exceptions_list = find_exceptions(OneToOne_serials_lists, AD_clean_data)
+AD_OneToOne_matches = find_matches(OneToOne_raw_data, serial_search, AD_clean_data)
+"""
+This code block iterates back over the AD_clean_data with the AD_duplicate_serials list to pull ALL entries
+With matching serial numbers to a seperate list
+"""
+ad_duplicates = []
+for line in AD_clean_data:
+    for number in AD_duplicate_serials:
+        if line['AD Serial Number'] == number:
+            ad_duplicates.append(line)
+ad_duplicates_sorted = sorted(
+    ad_duplicates, key=lambda x: x['AD Serial Number'])
+"""
+This code block handles the comparison of AD_master_list to OnetoOne_raw_data to pull a list of 1to1 entries with no matches in AD
+The names conditional is to handle those AD entries with empty description fields and 'Missing Serial'
+Only 1to1 entries with no serial number AND no name match in AD will be added to the exceptions list
+This is due to AD not updating description fields as quickly as we deploy devices
+"""
+OneToOne_exceptions_list = []
+for line in OneToOne_raw_data:
+    # Checks if Serial and Name BOTH match from 1to1 to AD
+    if not AD_master_list.count(line['Serial Number']) and not AD_names.count(line['Computer Name']):
+        OneToOne_exceptions_list.append(line)
 
 #############################
-#Function to optionally locate an Autopilot file
+# Function to optionally locate an Autopilot file
 #############################
-autopilot = False #Starting variable to skip autopilot comparisons unless user chooses otherwise
-def autopilot_popup(): #Popup asking user if they want to add an autopilot dataset
-    autopilot_choice = tk.BooleanVar(root, False) #Starting choice is False unless user chooses otherwise
-    popup = tk.Toplevel() #Sets popup as a standalone window
-    root.withdraw() #Removes any root windows
+"""
+This code block handles autopilot data input
+To start, the autopilot flag is set to False unless changed by the user
+Autopilot_popup() gives user the choice of selecting a file, or skipping
+Autopilot_error_popup() gives user feedback when the file chosen does not meet requirements
+"""
+Autopilot = False
+
+
+def Autopilot_popup():
+    autopilot_choice = tk.BooleanVar(root, False)
+    popup = tk.Toplevel()
+    root.withdraw()
     popup.title("Autopilot import")
     popup.geometry("300x75+850+500")
-    popup_label = tk.Label(popup, text="Do you wish to import an Autopilot file?")
+    popup_label = tk.Label(
+        popup, text="Do you wish to import an Autopilot file?")
     popup_label.pack(pady=10)
-    yes_button = tk.Button(popup, text="Yes", command=lambda: (autopilot_choice.set(True), popup.destroy())) #Sets choice to True and closes
+    yes_button = tk.Button(popup, text="Yes", command=lambda: (
+        autopilot_choice.set(True), popup.destroy()))
     yes_button.place(relx=0.25, rely=0.7, anchor=tk.CENTER)
-    no_button = tk.Button(popup, text="No", command=lambda: (autopilot_choice.set(False), popup.destroy())) #Sets choice to False and closes
+    no_button = tk.Button(popup, text="No", command=lambda: (
+        autopilot_choice.set(False), popup.destroy()))
     no_button.place(relx=0.75, rely=0.7, anchor=tk.CENTER,)
-    popup.wait_window(popup) #Programs waits until popup is closed before continuing
-    return autopilot_choice.get() #Returns the boolean value
+    popup.wait_window(popup)
+    return autopilot_choice.get()
 
-def autopilot_error(): #Error popup when user selects incorrect file
+
+def Autopilot_error_popup():
     popup = tk.Toplevel()
     popup.title("Error: Invalid file selected")
     popup.geometry("550x100+800+500")
@@ -301,178 +440,219 @@ def autopilot_error(): #Error popup when user selects incorrect file
     popup_button = tk.Button(popup, text="Try Again", command=popup.destroy)
     popup_button.pack()
     popup.lift()
-    return popup #Necessary for popup.wait_window
+    return popup
 
-popup = autopilot_popup() #Saves the boolean from the function as a variable
 
-def open_file_autopilot(): #Function to locate autopilot file
-    root.withdraw() #Hides root window
-    file_path = filedialog.askopenfilename(title="Please Select Your Exported Autopilot File!")
-    return file_path #Returns selected file_path
+Autopilot_choice = Autopilot_popup()
 
-while popup: #Loop for autopilot file selection to ensure correct file selected
-    file_path = open_file_autopilot() #Calls filedialog function and saves path as variable
-    autopilot_data_list = []
-    if file_path: #Checks if file_path exists, if user exits/cancels it will skip
-        if file_path.endswith(".csv"): #Checks for .csv file
-            try: #Try/except block to check for proper data in file
-                with open(file_path, 'r', encoding='utf-8-sig') as file: #Encoding required for autopilot export
+
+def Autopilot_file_select():
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Please Select Your Exported Autopilot File!")
+    return file_path
+
+
+"""
+This code block handles the file select loop if the user chose to import an Autopilot file
+Loop checks for a file_path, if user canceled it will exit the loop and continue
+It then checks for the .csv file type, and then tries to extract necessary data
+If the filetype is incorrect, or the necessary data is now present, it will open the Autopilot_error_popup()
+If the file and data are correct, it will end the loop, set the Autopilot flag to True, and writes a list of dictionaries
+"""
+while Autopilot_choice:
+    file_path = Autopilot_file_select()
+    Autopilot_raw_data = []
+    if file_path:
+        if file_path.endswith(".csv"):
+            try:
+                with open(file_path, 'r', encoding='utf-8-sig') as file:
                     csv_reader = DictReader(file)
-                    desired_headers = ['Group tag', 'Serial number'] #Required headers for file
-                    if not all(header in csv_reader.fieldnames for header in desired_headers): #If headers not found
-                        popup = autopilot_error()
-                        popup.wait_window(popup)
-                        continue #Will go back to start of loop
-                    popup = False #If file correct, stops the loop
-                    autopilot = True #Sets autopilot to True to tell program to run comparisons later
+                    desired_headers = ['Group tag', 'Serial number']
+                    if not all(header in csv_reader.fieldnames for header in desired_headers):
+                        Autopilot_error = Autopilot_error_popup()
+                        Autopilot_error.wait_window(Autopilot_error)
+                        continue
+                    Autopilot_choice = False
+                    Autopilot = True
                     for row in csv_reader:
                         selected_data = {}
                         for header in desired_headers:
                             selected_data[header] = row.get(header)
-                        autopilot_data_list.append(selected_data)
-            except: #If try block fails
-                popup = autopilot_error()
-                popup.wait_window(popup)
-        else: #If file is not a .csv
-            popup = autopilot_error()
-            popup.wait_window(popup)
+                        Autopilot_raw_data.append(selected_data)
+            except:
+                Autopilot_error = Autopilot_error_popup()
+                Autopilot_error.wait_window(Autopilot_error)
+        else:
+            Autopilot_error = Autopilot_error_popup()
+            Autopilot_error.wait_window(Autopilot_error)
     else:
-        sys.exit() #Will skip this block and continue program
+        sys.exit()
 
 
 #############################
-#Function to optionally locate an Intune file
+# Function to optionally locate an Intune file
 #############################
-intune = False #intune set to False unless user selects otherwise
-def intune_popup(): #Popup to ask user if they want to add an intune dataset
-    intune_choice = tk.BooleanVar(root, False) #Sets choice to False, unless user chooses otherwise
-    popup = tk.Toplevel() #Creates popup as an independant window
-    root.withdraw() #Hides root window
+"""
+This entire set of code blocks is a rewrite of the above Autopilot code block
+"""
+Intune = False
+
+
+def Intune_popup():
+    intune_choice = tk.BooleanVar(root, False)
+    popup = tk.Toplevel()
+    root.withdraw()
     popup.title("Intune import")
     popup.geometry("300x75+850+500")
     popup_label = tk.Label(popup, text="Do you wish to import an Intune file?")
     popup_label.pack(pady=10)
-    yes_button = tk.Button(popup, text="Yes", command=lambda: (intune_choice.set(True), popup.destroy())) #Sets choice to True and closes
+    yes_button = tk.Button(popup, text="Yes", command=lambda: (
+        intune_choice.set(True), popup.destroy()))
     yes_button.place(relx=0.25, rely=0.7, anchor=tk.CENTER)
-    no_button = tk.Button(popup, text="No", command=lambda: (intune_choice.set(False), popup.destroy())) #Sets choice to False and closes
+    no_button = tk.Button(popup, text="No", command=lambda: (
+        intune_choice.set(False), popup.destroy()))
     no_button.place(relx=0.75, rely=0.7, anchor=tk.CENTER,)
-    popup.wait_window(popup) #Program will wait until popup is closed before continuing
-    return intune_choice.get() #Returns boolean value
+    popup.wait_window(popup)
+    return intune_choice.get()
 
-def intune_error(): #Popup to inform user of incorrect file selection
-    popup = tk.Toplevel() #Creates popup as an independant window
+
+def Intune_error_popup():
+    popup = tk.Toplevel()
     popup.title("Error: Invalid file selected")
     popup.geometry("550x100+800+500")
     popup_label = tk.Label(popup, text="Please be sure to select the exported Intune document!\n"
                            "File must contain 'Device name' and 'Serial number'")
     popup_label.pack(pady=10)
-    popup_button = tk.Button(popup, text="Try Again", command=popup.destroy) #Closes popup
+    popup_button = tk.Button(popup, text="Try Again", command=popup.destroy)
     popup_button.pack()
-    popup.lift() #Puts popup on top of other windows
-    return popup #Necessary for popup.wait_window
+    popup.lift()
+    return popup
 
-popup = intune_popup() #Saves boolean value from intune_popup as a variable
 
-def open_file_intune(): #Function to find intune filepath
-    root.withdraw() #Hides root window
-    file_path = filedialog.askopenfilename(title="Please Select Your Exported Intune File!")
-    return file_path #Returns the intune file path
+Intune_choice = Intune_popup()
 
-while popup: #While loop to ensure user selects appropriate file
-    file_path = open_file_intune() #Saves file path from function as a variable
-    intune_data_list = []
-    if file_path: #Checks for file_path existence, if user exits/closes it will skip
-        if file_path.endswith(".csv"): #Checks for .csv
-            try: #Try/except block to check for proper data in file
-                with open(file_path, 'r', encoding='utf-8-sig') as file: #Encoding necessary for Intune export
+
+def Intune_file_select():
+    root.withdraw()
+    file_path = filedialog.askopenfilename(
+        title="Please Select Your Exported Intune File!")
+    return file_path
+
+
+while Intune_choice:
+    file_path = Intune_file_select()
+    Intune_raw_data = []
+    if file_path:
+        if file_path.endswith(".csv"):
+            try:
+                with open(file_path, 'r', encoding='utf-8-sig') as file:
                     csv_reader = DictReader(file)
-                    desired_headers = ['Device name', 'Serial number'] #Required headers
-                    if not all(header in csv_reader.fieldnames for header in desired_headers): #If headers not found
-                        popup = intune_error()
-                        popup.wait_window(popup)
-                        continue #Will go back to start of loop
-                    popup = False #If file correct, will set to False to stop loop
-                    intune = True #Sets intune to True to tell the program to run comparisons later
+                    desired_headers = ['Device name', 'Serial number']
+                    if not all(header in csv_reader.fieldnames for header in desired_headers):
+                        Intune_error = Intune_error_popup()
+                        Intune_error.wait_window(Intune_error)
+                        continue
+                    Intune_choice = False
+                    Intune = True
                     for row in csv_reader:
                         selected_data = {}
                         for header in desired_headers:
                             selected_data[header] = row.get(header)
-                        intune_data_list.append(selected_data)
-            except: #If try block fails
-                popup = intune_error()
-                popup.wait_window(popup)
-        else: #If file not a .csv
-            popup = intune_error()
-            popup.wait_window(popup)
+                        Intune_raw_data.append(selected_data)
+            except:
+                Intune_error = Intune_error_popup()
+                Intune_error.wait_window(Intune_error)
+        else:
+            Intune_error = Intune_error_popup()
+            Intune_error.wait_window(Intune_error)
     else:
-        sys.exit() #Will skip this block and continue program
-
+        sys.exit()
 
 #############################
-#Readme file
+# Readme file
 #############################
-readme="""---Some helpful information about the data in this file---
+# This code block writes a readme sheet to the end of the excel spreadsheet
+readme = """---Some helpful information about the data in this file---
 
-*AD_1to1_Matches: Lists all entries with matching Serial Numbers between AD and 1to1
+*AD_OneToOne_matches: Lists all entries with matching Serial Numbers between AD and 1to1
 
-*1to1_Exceptions: Lists all 1to1 entries that do not have matching AD entries
+*1OneToOne_exceptions_list: Lists all 1to1 entries that do not have matching AD entries
 This takes into account AD entries with missing SN: or description fields
 And only shows 1to1 entries with NO matchines serial or computer names
 
-*AD_Exceptions: Lists all AD entries that do not have matching 1to1 entries
+*AD_exceptions_list: Lists all AD entries that do not have matching 1to1 entries
 This does not include Missing Serials
 
 *AD_Duplicates: Is a list of all AD entries with the same Serial Number
 
-*AD_Missing_Serial: Lists all AD entries with a missing SN: field
+*AD_missing_serials: Lists all AD entries with a missing SN: field
 
-*AD_Autopilot_Matches: Lists all AD entries that have matching serial numbers in Autopilot
+*AD_Autopilot_matches: Lists all AD entries that have matching serial numbers in Autopilot
 
-*AD_Autopilot_Exceptions: Lists all AD entries that do not have matching serial numbers in Autopilot
+*AD_Autopilot_exceptions: Lists all AD entries that do not have matching serial numbers in Autopilot
 
-*AD_Intune_Matches: Lists all AD entries that have matching serial numbers in Intune
+*AD_Intune_matches: Lists all AD entries that have matching serial numbers in Intune
 
-*AD_Intune_Exceptions: Lists all AD entries that do not have matching serial numbers in Intune"""
+*AD_Intune_exceptions: Lists all AD entries that do not have matching serial numbers in Intune"""
 
 lines = readme.split("\n")
 
+#############################
+# Export functions
+#############################
+"""
+These functions handle all of the exporting processes
+exporting_popup() let's users know the data analysis and exporting process is occuring
+export_file_select() chooses the location and name of exporting .xlsx
+export_sheet() handles the formatting and exporting of individual sheets
+"""
 
-#############################
-#Export functions
-#############################
-def exporting_popup(): #A popup to let users know the data analysis/export is occuring
-    global popup #Is set to global so it can be terminated later in program
-    popup = tk.Toplevel() #Makes the popup an independant window
+
+def exporting_popup():
+    global popup
+    popup = tk.Toplevel()
     popup.title("Exporting... Please Wait...")
     popup.geometry("550x100+850+500")
     popup_label = tk.Label(popup, text="Data Analysis and exporting in progress...\n"
                            "This can take up to a minute, depending on data selected.")
     popup_label.pack(pady=10)
-    popup.lift() #Places the popup on top of other windows
+    popup.lift()
 
-def open_file_export(): #Function to open a file save window for the export
-    root.withdraw() #Hides root window
+
+def export_file_select():
+    root.withdraw()
     file_path = filedialog.asksaveasfilename(
-    title="Save Your Analyzed Data As",
-    filetypes=[("Excel files", "*.xlsx"), ("CSV files", "*.csv"), ("All files", "*.*")], #Lists available filetypes for export
-    defaultextension=".xlsx"  # Default extension for the file
+        title="Save Your Analyzed Data As",
+        filetypes=[("Excel files", "*.xlsx"),
+                   ("CSV files", "*.csv"), ("All files", "*.*")],
+        defaultextension=".xlsx"
     )
-    return file_path #Returns the chosen filepath/filename/filetype
+    return file_path
+
 
 def export_sheet(data, name):
-    df_sheet = DataFrame(data) #Accesses the appropriate variable with the pandas DataFrame module
-    df_sheet.to_excel(writer, sheet_name=name, index=False) #Pandas ExcelWriter module to assigned the variable to a sheet
-    worksheet = workbook[name] #Access the workbook settings
-    for col, width in column_widths.items(): #Iterate over the column_width dictionary by .items
-        worksheet.column_dimensions[col].width = width    
+    df_sheet = DataFrame(data)
+    df_sheet.to_excel(writer, sheet_name=name, index=False)
+    worksheet = workbook[name]
+    for col, width in column_widths.items():
+        worksheet.column_dimensions[col].width = width
+
+
+file_path = export_file_select()
+exporting_popup()
 
 #############################
-#Data Comparisons
+# Data Comparisons
 #############################
-file_path = open_file_export() #Saves the filepath/filename/filetype as a variable
-exporting_popup() #Opens the popup letting user know the export is occuring 
+"""
+All data comparison handles in thie block
+Data sets comprised of two dictionaries are combined for output
+Optional Intune and Autopilot comparisons happen when flagged
+"""
 
-def combine_dict(dict): #Function to combine two dictionaries in a list
+
+def combine_dict(dict):
     data_sheet = []
     for sublist in dict:
         combined_dict = {}
@@ -481,116 +661,112 @@ def combine_dict(dict): #Function to combine two dictionaries in a list
         data_sheet.append(combined_dict)
     return data_sheet
 
-#AD_1to1 data set
-data_sheet1 = combine_dict(ad_1to1_matches)
 
-if autopilot: #If user chose to import an autopilot data set
+data_sheet1 = combine_dict(AD_OneToOne_matches)
+
+
+if Autopilot:
     serial_search = "Serial number"
-    autopilot_serials = find_serials(autopilot_data_list, serial_search) #List of all serial numbers in autopilot data
-    ad_autopilot_exceptions = exceptions(autopilot_serials) #List of all AD entries that do not have matching serial numbers with autopilot != Missing Serial
-    ad_autopilot_matches = matches(autopilot_data_list, serial_search)
-    #AD_autopilot data set
-    data_sheet2 = combine_dict(ad_autopilot_matches)
+    Autopilot_serials_list = find_serials(Autopilot_raw_data, serial_search)
+    AD_Autopilot_exceptions = find_exceptions(Autopilot_serials_list, AD_clean_data)
+    AD_Autopilot_matches = find_matches(Autopilot_raw_data, serial_search, AD_clean_data)
+    data_sheet2 = combine_dict(AD_Autopilot_matches)
 
-    if intune: #If user chose to import and autopilot AND intune dataset
+    if Intune:
         serial_search = 'Serial number'
-        intune_serials = find_serials(intune_data_list, serial_search) #List of all serial numbers in Intune data
-        ad_intune_exceptions = exceptions(intune_serials) #List of all AD entries that do not have matching serials with Intune != Missing Serial
-        ad_intune_matches = matches(intune_data_list, serial_search) #Compares Intune serials and AD
-        #AD_intune data set
-        data_sheet3 = combine_dict(ad_intune_matches)
+        Intune_serials_list = find_serials(Intune_raw_data, serial_search)
+        AD_Intune_exceptions = find_exceptions(Intune_serials_list, AD_clean_data)
+        AD_Intune_matches = find_matches(Intune_raw_data, serial_search, AD_clean_data)
+        data_sheet3 = combine_dict(AD_Intune_matches)
 
-elif intune: #If user chose to ONLY import intune data
+elif Intune:
     serial_search = "Serial number"
-    intune_serials = find_serials(intune_data_list, serial_search) #List of all serial numbers in Intune data
-    ad_intune_exceptions = exceptions(intune_serials) #List of all AD entries that do not have matching serials with Intune != Missing Serial
-    ad_intune_matches = matches(intune_data_list, serial_search) #Compares Intune serials and AD
-    #AD_intune data set
-    data_sheet3 = combine_dict(ad_intune_matches)
-
+    Intune_serials_list = find_serials(Intune_raw_data, serial_search)
+    AD_Intune_exceptions = find_exceptions(Intune_serials_list, AD_clean_data)
+    AD_Intune_matches = find_matches(Intune_raw_data, serial_search, AD_clean_data)
+    data_sheet3 = combine_dict(AD_Intune_matches)
 
 #############################
-#Format and export the .csv
-#Due to the necessity of multiple sheets, this is now being handled by PANDAS as an .xlsx
+# Format and export the .xlsx
 #############################
-from pandas import DataFrame, ExcelWriter
+"""
+This code blocks handles all of the exporting
+"""
 
-column_widths = {'A': 30, 'B': 30, 'C': 30, 'D': 30, 'E': 30, 'F': 30} #A dictionary of columns and their respective widths
+column_widths = {'A': 30, 'B': 30, 'C': 30, 'D': 30, 'E': 30, 'F': 30}
 
 with ExcelWriter(file_path) as writer:
-    workbook = writer.book #Accesses workbook settings to adjust column sizes
-
-    #The AD_1to1_Matches data sheet
-    df_sheet1 = export_sheet(data_sheet1, 'AD_1to1_Matches')
-    #The 1to1_Exceptions data sheet
-    df_sheet2 = export_sheet(to1_exceptions, '1to1_Exceptions')
-    #The AD_Exceptions data sheet
-    df_sheet3 = export_sheet(ad_exceptions, 'AD_Exceptions')
-    #The AD_Duplicates data sheet
+    workbook = writer.book
+    df_sheet1 = export_sheet(data_sheet1, 'AD_OneToOne_matches')
+    df_sheet2 = export_sheet(OneToOne_exceptions_list,
+                             'OneToOne_exceptions_list')
+    df_sheet3 = export_sheet(AD_exceptions_list, 'AD_exceptions_list')
     df_sheet4 = export_sheet(ad_duplicates_sorted, 'AD_Duplicates')
-    #The AD_Missing_Serial data sheet
-    df_sheet5 = export_sheet(ad_missing_serial, 'AD_Missing_Serial')
+    df_sheet5 = export_sheet(AD_missing_serials, 'AD_missing_serials')
 
-#This block is accessed if autopilot is true, and it will process the necessary data and export it to the spreadsheet.
-    if autopilot: #If user chose to import an autopilot data set
-        #The AD_Autopilot_Matches data sheet
-        df_sheet6 = export_sheet(data_sheet2, 'AD_Autopilot_Matches')
-        #The AD_Autopilot_Exceptions data sheet
-        df_sheet7 = export_sheet(ad_autopilot_exceptions, 'AD_Autopilot_Exceptions')
+    if Autopilot:
+        df_sheet6 = export_sheet(data_sheet2, 'AD_Autopilot_matches')
+        df_sheet7 = export_sheet(
+            AD_Autopilot_exceptions, 'AD_Autopilot_exceptions')
 
-        #This block is accessed if Intune AND autopilot is true, and it will process the necessary data and export it to the spreadsheet.
-        if intune: #If user chose to import and autopilot AND intune dataset
-            #The AD_Intune_Matches data sheet
-            df_sheet8 = export_sheet(data_sheet3, 'AD_Intune_Matches')
-            #The AD_Intune_Exceptions data sheet
-            df_sheet9 = export_sheet(ad_intune_exceptions, 'AD_Intune_Exceptions')
-            #The README sheet
+        if Intune:
+            df_sheet8 = export_sheet(data_sheet3, 'AD_Intune_matches')
+            df_sheet9 = export_sheet(
+                AD_Intune_exceptions, 'AD_Intune_exceptions')
             df_sheet10 = DataFrame({"Readme": lines})
             df_sheet10.to_excel(writer, sheet_name='README', index=False)
 
         else:
-            #The README sheet
             df_sheet8 = DataFrame({"Readme": lines})
             df_sheet8.to_excel(writer, sheet_name='README', index=False)
 
-    #This block is accessed if Intune is true, and autopilot is FALSE. It will process the necessary data and export it to the spreadsheet.
-    #Exactly the same as the code block included in the if autopilot: conditional with different sheet #s
-    elif intune: #If user chose to ONLY import intune data
-        #The AD_Intune_Matches data sheet
-        df_sheet6 = export_sheet(data_sheet3, 'AD_Intune_Matches')
-        #The AD_Intune_Exceptions data sheet
-        df_sheet7 = export_sheet(ad_intune_exceptions, 'AD_Intune_Exceptions')
-        #The README sheet
+    elif Intune:
+        df_sheet6 = export_sheet(data_sheet3, 'AD_Intune_matches')
+        df_sheet7 = export_sheet(AD_Intune_exceptions, 'AD_Intune_exceptions')
         df_sheet8 = DataFrame({"Readme": lines})
         df_sheet8.to_excel(writer, sheet_name='README', index=False)
 
     else:
-        #The README sheet
         df_sheet6 = DataFrame({"Readme": lines})
         df_sheet6.to_excel(writer, sheet_name='README', index=False)
 
-close_popup() #Close the exporting_popup
+
+def close_popup():
+    """
+    This function is used to destroy the exporting popup
+    Unable to destroy it outside of using global, as it returns a boolean value
+    """
+    if 'popup' in globals():
+        popup.destroy()
 
 
+close_popup()
+
 #############################
-#Post-processing
+# Post-processing
 #############################
-def export_complete(): #This is a popup letting the user know the program ran successfully
-    popup = tk.Toplevel() #Makes popup an independant window
+"""
+This function informs user of a successful data analysis/export
+"""
+
+
+def export_complete():
+    popup = tk.Toplevel()
     popup.title("Export Complete!")
     popup.geometry("300x75+850+500")
-    popup_label = tk.Label(popup, text="The data has been analyzed and exported succesfully!")
+    popup_label = tk.Label(
+        popup, text="The data has been analyzed and exported succesfully!")
     popup_label.pack(pady=10)
-    popup_button = tk.Button(popup, text="Close", command=popup.destroy) #Closes popup
+    popup_button = tk.Button(popup, text="Close", command=popup.destroy)
     popup_button.pack()
-    popup.lift() #Places popup on top of other windows
-    return popup #Necessary for wait_window
+    popup.lift()
+    return popup
+
 
 complete_popup = export_complete()
-complete_popup.wait_window(complete_popup) #Keeps program from closing until user acknowledges export completion
+complete_popup.wait_window(complete_popup)
 
-#Use binary searches for the comparisons? Will this speed up the export process? 
-#First attempt failed: Trouble sorting through lists of dictionaries
 
-#Process executor? 
-#First attempt failed: Kept repeating the school_select function
+#############################
+# Additional Comments and To-Do
+#############################
