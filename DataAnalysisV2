@@ -34,96 +34,27 @@ def school_select():
     other = tk.Menu(menu)
 
     # Elementary Schools
-    elementary.add_command(label="Aiken Elementary", command=lambda: (
-        ad_identifier.set("AIKE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Belvedere Elementary", command=lambda: (
-        ad_identifier.set("BELE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Busbee Corbin Elementary", command=lambda: (
-        ad_identifier.set("BUSCOR"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Byrd Elementary", command=lambda: (
-        ad_identifier.set("BYRE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Chucker Creek Elementary", command=lambda: (
-        ad_identifier.set("CHUE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Clearwater Elementary", command=lambda: (
-        ad_identifier.set("CLEE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="East Aiken School of the Arts", command=lambda: (
-        ad_identifier.set("EAIE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Gloverville Elementary", command=lambda: (
-        ad_identifier.set("GLOE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Graniteville Elementary", command=lambda: (
-        ad_identifier.set("GRAE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Greendale Elementary", command=lambda: (
-        ad_identifier.set("GREE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Hammond Hill Elementary", command=lambda: (
-        ad_identifier.set("HHIE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="J.D. Lever Elementary", command=lambda: (
-        ad_identifier.set("JDLE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Jefferson Elementary", command=lambda: (
-        ad_identifier.set("JEFE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Millbrook Elementary", command=lambda: (
-        ad_identifier.set("MILE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Mossy Creek Elementary", command=lambda: (
-        ad_identifier.set("MOSE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="North Aiken Elementary", command=lambda: (
-        ad_identifier.set("NAIE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="North Augusta Elementary", command=lambda: (
-        ad_identifier.set("NAUE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Oakwood-Windsor Elementary", command=lambda: (
-        ad_identifier.set("OAKE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Redcliffe Elementary", command=lambda: (
-        ad_identifier.set("REDE"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Ridge-Spring Monetta Elementary", command=lambda: (
-        ad_identifier.set("RSME"), ad_grade.set("Elementary Schools"), root.quit()))
-    elementary.add_command(label="Warrenville Elementary", command=lambda: (
-        ad_identifier.set("WARE"), ad_grade.set("Elementary Schools"), root.quit()))
+    """
+    The following code snippet has been shortened and sanitized
+    """
+    elementary.add_command(label="ELEMENTARY", command=lambda: (
+        ad_identifier.set("ELEM"), ad_grade.set("Elementary Schools"), root.quit()))
+    
 
     # Middle Schools
-    middle.add_command(label="Aiken Intermediate", command=lambda: (
-        ad_identifier.set("AIKM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Highland Springs Middle", command=lambda: (
-        ad_identifier.set("HSMS"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Jackson Middle", command=lambda: (
-        ad_identifier.set("JACM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Kennedy Middle", command=lambda: (
-        ad_identifier.set("KENM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="L.B.C. Middle", command=lambda: (
-        ad_identifier.set("LBCM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Leavelle McCampbell Middle", command=lambda: (
-        ad_identifier.set("LEAM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="North Augusta Middle", command=lambda: (
-        ad_identifier.set("NAUM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="New Ellenton Middle", command=lambda: (
-        ad_identifier.set("NELM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Paul Knox Middle", command=lambda: (
-        ad_identifier.set("PKNM"), ad_grade.set("Middle Schools"), root.quit()))
-    middle.add_command(label="Schofield Middle", command=lambda: (
-        ad_identifier.set("SCHM"), ad_grade.set("Middle Schools"), root.quit()))
+    middle.add_command(label="MIDDLE", command=lambda: (
+        ad_identifier.set("MIDDLE"), ad_grade.set("Middle Schools"), root.quit()))
+
 
     # High Schools
-    high.add_command(label="Aiken High", command=lambda: (
-        ad_identifier.set("AIKH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Midland Valley High", command=lambda: (
-        ad_identifier.set("MVAH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="North Augusta High", command=lambda: (
-        ad_identifier.set("NAUH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Ridge-Spring Monetta High", command=lambda: (
-        ad_identifier.set("RSMH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="South Aiken High", command=lambda: (
-        ad_identifier.set("SAIH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Silverbluff High", command=lambda: (
-        ad_identifier.set("SILH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Wagner-Salley High", command=lambda: (
-        ad_identifier.set("WAGH"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Aiken County Career Center", command=lambda: (
-        ad_identifier.set("ACCC"), ad_grade.set("High Schools"), root.quit()))
-    high.add_command(label="Aiken Scholars Academy", command=lambda: (
-        ad_identifier.set("ASAH"), ad_grade.set("High Schools"), root.quit()))
+    high.add_command(label="HIGH", command=lambda: (
+        ad_identifier.set("HIGH"), ad_grade.set("High Schools"), root.quit()))
+
 
     # Other Schools
-    other.add_command(label="Aiken Innovate", command=lambda: (
-        ad_identifier.set("AikenInnovate"), ad_grade.set("Other Schools"), root.quit()))
-    other.add_command(label="Pinecrest", command=lambda: (
-        ad_identifier.set("Pinecrest"), ad_grade.set("Other Schools"), root.quit()))
+    other.add_command(label="OTHER", command=lambda: (
+        ad_identifier.set("OTHER"), ad_grade.set("Other Schools"), root.quit()))
+
 
     # Drop-Down Menus
     menu.add_cascade(label="Elementary Schools", menu=elementary)
